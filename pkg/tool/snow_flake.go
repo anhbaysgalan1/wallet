@@ -1,0 +1,164 @@
+package tool
+
+import (
+	"errors"
+	"fmt"
+	rds "gluttonous/pkg/database/redis"
+	"gluttonous/pkg/log"
+	"go.uber.org/zap"
+	"sort"
+	"strconv"
+	"sync"
+	"time"
+)
+
+const (
+	workerBits uint8 = 10 // 每台机器(节点)的id位数 10位最大可以有2^10=1024个节点(0-1023)
+	numberBits uint8 = 22 // 表示每个集群下的每个节点，1秒内可生成的id序号的二进制位数 即每秒可生成 2^22-1=4194304个唯一id(0-4194303)
+	// 这里求最大值使用了位运算
+	workerMax   int64 = ^(-1 << workerBits)     // 节点ID的最大值，用于防止溢出
+	numberMax   int64 = ^(-1 << numberBits)     // 每个节点，1秒内可生成的id序号最大值
+	timeShift   uint8 = workerBits + numberBits // 时间戳向左的偏移量
+	workerShift uint8 = numberBits              // 节点id向左的偏移量
+	// 31位字节作为时间戳数值的话 大约68年就会用完
+	// 假如你2010年1月1日开始开发系统 如果不减去2010年1月1日的时间戳 那么白白浪费40年的时间戳啊！
+	// 这个一旦定义且开始生成ID后千万不要改了 不然可能会生成相同的ID
+	epoch int64 = 1594364131 //这个是我在写epoch这个变量时的时间戳(秒)
+)
+
+var w *Worker
+
+type Worker struct {
+	mu        sync.Mutex // 添加互斥锁 确保并发安全
+	timestamp int64      // 记录时间戳
+	workerId  int64      // 该节点的ID
+	number    int64      // 当前毫秒已经生成的id序列号(从0开始累加) 1秒内最多生成4194304个id
+}
+
+const snowFlakeKey = "snow_flake_id"          //1 未使用 2被使用
+const snowFlakeKeyLock = "snow_flake_id_lock" //1 未使用 2被使用
+
+func NewWorkerIdTool(client *rds.Client) (int64, error) {
+	lock := rds.NewRedisLock(client, snowFlakeKeyLock, fmt.Sprint(GetTimeUnixMilli()), time.Second*10)
+	success, err := lock.TryLock()
+	if err != nil {
+		return 0, err
+	}
+	if !success {
+		return 0, errors.New("not get id lock")
+	}
+	defer func(lock *rds.RedisLock) {
+		_ = lock.UnLock()
+	}(lock)
+	data, err := client.HGetAll(snowFlakeKey).Result()
+	if err != nil {
+		return 0, err
+	}
+	if len(data) == 0 {
+		data = make(map[string]string, 1023)
+		var info = make(map[string]interface{}, 1023)
+		for i := 1; i <= 1023; i++ {
+			data[strconv.Itoa(i)] = "1"
+			info[strconv.Itoa(i)] = "1"
+		}
+		if err := client.HMSet(snowFlakeKey, info).Err(); err != nil {
+			return 0, err
+		}
+	}
+	var keys []int
+	for k, _ := range data {
+		idInt, err := strconv.Atoi(k)
+		if err != nil {
+			return 0, err
+		}
+		keys = append(keys, idInt)
+	}
+	sort.Ints(keys)
+	for k := range keys {
+		if data[strconv.Itoa(k)] == "1" {
+			if err = client.HSet(snowFlakeKey, strconv.Itoa(k), "2").Err(); err != nil {
+				return 0, err
+			}
+			return int64(k), nil
+		}
+	}
+	return 0, errors.New("id finished use")
+}
+
+func (w *Worker) CloseWorkerIdTool(client *rds.Client) error {
+	if w.workerId <= 0 {
+		return nil
+	}
+	log.GetLogger().Info("CloseWorkerIdTool", zap.String("key", snowFlakeKey), zap.Any("id", w.workerId))
+	return client.HSet(snowFlakeKey, strconv.Itoa(int(w.workerId)), "1").Err()
+}
+
+// @desc 初始化一个节点
+// @return
+func NewWorker(workerId int64) error {
+	// 要先检测workerId是否在上面定义的范围内
+	log.GetLogger().Info("", zap.Any("workerId", workerId))
+	if workerId < 0 || workerId > workerMax {
+		return errors.New("workId is invalidate")
+	}
+	w = &Worker{
+		timestamp: 0,
+		workerId:  workerId,
+		number:    0,
+	}
+	return nil
+}
+
+func GetSnowFlake() *Worker {
+	return w
+}
+
+// @desc 获取id
+func (w *Worker) GetId() int64 {
+	//解决并发安全
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	//获取生成时的时间戳
+	now := w.Now()
+	if now == w.timestamp {
+		w.number++
+		//这里要判断，当前工作节点是否在1秒内已经生成numberMax个id
+		if w.number > numberMax {
+			//如果当前工作节点在1秒内生成的id已经超过上限 需要等待1秒再继续生成
+			w.number = 0
+			for now <= w.timestamp {
+				now = w.Now()
+			}
+			w.timestamp = now
+		}
+	} else if now > w.timestamp {
+		//如果当前时间与工作节点上一次生成id的时间不一致 则需要重置工作节点生成id的序号
+		w.number = 0
+		//将机器上一次生成id的时间更新为当前时间
+		w.timestamp = now
+
+	} else {
+		for now < w.timestamp {
+			now = w.Now()
+		}
+		w.number++
+		//这里要判断，当前工作节点是否在1秒内已经生成numberMax个id
+		if w.number > numberMax {
+			//如果当前工作节点在1秒内生成的id已经超过上限 需要等待1秒再继续生成
+			w.number = 0
+			for now <= w.timestamp {
+				now = w.Now()
+			}
+			w.timestamp = now
+		}
+	}
+	//第一段 now - epoch 为该算法目前已经奔跑了秒
+	//如果在程序跑了一段时间修改了epoch这个值 可能会导致生成相同的id
+	id := int64((now-epoch)<<timeShift | (w.workerId << workerShift) | (w.number))
+	return id
+}
+
+// @desc 获取当前时间
+func (w *Worker) Now() int64 {
+	return time.Now().Unix()
+}
