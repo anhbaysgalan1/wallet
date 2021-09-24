@@ -113,7 +113,7 @@ func String(e string) Code {
 	// try error string
 	i, err := strconv.Atoi(e)
 	if err != nil {
-		return ServerErr
+		return ErrServer
 	}
 	return Code(i)
 }

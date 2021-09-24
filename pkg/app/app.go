@@ -113,15 +113,15 @@ func GetPageOffset(page, pageSize int) int {
 }
 
 type Pagination struct {
-	Limit     int `json:"limit"`
-	Offset    int `json:"offset"`
-	TotalRows int `json:"total_rows"`
+	Limit     int64 `json:"limit"`
+	Offset    int64 `json:"offset"`
+	TotalRows int64 `json:"total_rows"`
 }
 
 func GetPagination(c *gin.Context) *Pagination {
 	var page = Pagination{}
-	page.Limit = convert.StrTo(c.Query("limit")).MustInt()
-	page.Offset = convert.StrTo(c.Query("offset")).MustInt()
+	page.Limit = convert.StrTo(c.Query("limit")).MustInt64()
+	page.Offset = convert.StrTo(c.Query("offset")).MustInt64()
 	if page.Limit == 0 {
 		return nil
 	}

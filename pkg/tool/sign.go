@@ -2,7 +2,7 @@ package tool
 
 import (
 	"fmt"
-	"gluttonous/pkg/hcode"
+	"github.com/leaf-rain/wallet/pkg/hcode"
 	"sort"
 	"strings"
 )
@@ -10,13 +10,13 @@ import (
 func Sign(data map[string]interface{}, key string) error {
 	reqSign, ok := data["sign"]
 	if !ok {
-		return hcode.ParameterErr
+		return hcode.ErrParameter
 	}
 	signStart := JoinStringsInASCII(data, "&", false, "sign")
 	signEnd := fmt.Sprintf("%s&sign=%s", signStart, key)
 	endSign := GetMD5Encode(signEnd)
 	if reqSign != endSign {
-		return hcode.SignErr
+		return hcode.ErrServer
 	}
 	return nil
 }

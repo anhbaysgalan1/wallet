@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/go-redis/redis"
+	c3 "github.com/leaf-rain/wallet/pkg/redisCache/common"
 	"github.com/vmihailenco/bufpool"
-	common2 "gluttonous/pkg/redisCache/common"
 	"golang.org/x/sync/singleflight"
 	"sync/atomic"
 	"time"
@@ -20,8 +20,8 @@ type MarshalFunc func(interface{}) ([]byte, error)
 type UnmarshalFunc func([]byte, interface{}) error
 
 type Options struct {
-	Redis        common2.Rediser
-	LocalCache   common2.LocalCache
+	Redis        c3.Rediser
+	LocalCache   c3.LocalCache
 	StatsEnabled bool
 	Marshal      MarshalFunc
 	Unmarshal    UnmarshalFunc
@@ -36,7 +36,7 @@ type Cache struct {
 	marshal   MarshalFunc
 	unmarshal UnmarshalFunc
 
-	common2.RedisLock
+	c3.RedisLock
 
 	hits   uint64
 	misses uint64
@@ -48,17 +48,17 @@ func New(opt *Options) *Cache {
 	}
 
 	if opt.Redis != nil {
-		cacher.RedisLock = common2.NewRedisLock(opt.Redis)
+		cacher.RedisLock = c3.NewRedisLock(opt.Redis)
 	}
 
 	if opt.Marshal == nil {
-		cacher.marshal = common2.Marshal
+		cacher.marshal = c3.Marshal
 	} else {
 		cacher.marshal = opt.Marshal
 	}
 
 	if opt.Unmarshal == nil {
-		cacher.unmarshal = common2.Unmarshal
+		cacher.unmarshal = c3.Unmarshal
 	} else {
 		cacher.unmarshal = opt.Unmarshal
 	}
