@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package Account.service.v1;
+
+option go_package = "../../internal/account/dto";
+
+service AccountSrv {
+  rpc Ping(Empty) returns (Empty);
+  // 获取帐号
+  rpc AccountGet(AccountGetReq) returns (AccountGetResp) {};
+}
+
+message Empty {}
+
+message AccountGetReq {
+  string currency = 1; // 币种
+  string remarks = 2; // 备注
+  AccountType type = 3; // 类别
+}
+
+message AccountGetResp {
+  string address = 1; // 币种
+}
+
+enum AccountType{
+  AccountType_UnUsed = 0; // 未使用
+  AccountType_Used = 1; // 已使用
+  AccountType_Manager = 2; // 管理员
+}

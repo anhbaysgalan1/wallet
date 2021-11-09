@@ -3,15 +3,15 @@ package cache
 import (
 	"context"
 	"github.com/go-redis/redis"
-	"github.com/leaf-rain/wallet/internal/block_chain/model"
+	"github.com/leaf-rain/wallet/internal/account/entity"
 	"github.com/leaf-rain/wallet/pkg/redisCache/kvCache"
 )
 
-type WalletCache interface {
+type AccountCache interface {
 	// AddressGet 获取地址
-	AddressGet(ctx context.Context, currency string) (address string, err error)
+	AddressGet(ctx context.Context, currency string) (address, id string, err error)
 	// AddressInset 插入地址池
-	AddressInset(ctx context.Context, addrS []model.AddressPrivate) (err error)
+	AddressInset(ctx context.Context, addrS []*entity.EntityAddressPrivate) (err error)
 	// AddressGetTotal 获取地址池数量
 	AddressGetTotal(ctx context.Context, currency string) (total int64, err error)
 	// AddressIsItOurs 是否监听地址
@@ -23,7 +23,7 @@ type cache struct {
 	kv    *kvCache.Cache
 }
 
-func NewWalletCache(ctx context.Context, redis *redis.Client) WalletCache {
+func NewWalletCache(ctx context.Context, redis *redis.Client) AccountCache {
 	c := &cache{redis: redis}
 	c.kv = kvCache.New(&kvCache.Options{Redis: redis})
 	return c

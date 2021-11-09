@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package common;
-
-enum Net {
-  ETH_Miner = 0;
-}

@@ -2,10 +2,12 @@ package cache
 
 import (
 	"context"
-	"github.com/leaf-rain/wallet/common"
-	"github.com/leaf-rain/wallet/internal/block_chain/model"
+	"github.com/leaf-rain/wallet/internal/account/entity"
+	"github.com/leaf-rain/wallet/internal/common"
+	"github.com/leaf-rain/wallet/pkg/hcode"
 	"github.com/leaf-rain/wallet/pkg/log"
 	"go.uber.org/zap"
+	"time"
 )
 
 func getKeyAddress(currency string) string {
@@ -13,7 +15,7 @@ func getKeyAddress(currency string) string {
 }
 
 // AddressInset 插入地址池
-func (c *cache) AddressInset(ctx context.Context, addrS []model.AddressPrivate) (err error) {
+func (c *cache) AddressInset(ctx context.Context, addrS []*entity.EntityAddressPrivate) (err error) {
 	if len(addrS) == 0 {
 		return nil
 	}
@@ -22,17 +24,19 @@ func (c *cache) AddressInset(ctx context.Context, addrS []model.AddressPrivate) 
 		return nil
 	}
 	var key = getKeyAddress(addrS[0].Currency)
-	var value = make([]interface{}, len(addrS))
+	var valueMap = make(map[string]interface{}, len(addrS))
+	var valueList = make([]interface{}, len(addrS))
 	for i := range addrS {
-		value[i] = addrS[i].Address
+		valueMap[addrS[i].Address] = addrS[i].Id.Hex()
+		valueList[i] = addrS[i].Address
 	}
-	if err = c.redis.SAdd(common.AllAddress, value...).Err(); err != nil {
+	if err = c.redis.HMSet(common.AllAddress, valueMap).Err(); err != nil {
+		log.GetLogger().Error("[AddressInset] failed", zap.Any("addrS", addrS), zap.Error(err))
+	}
+	if err = c.redis.SAdd(key, valueList...).Err(); err != nil {
 		log.GetLogger().Error("[AddressInset] failed", zap.Any("addrS", addrS), zap.Error(err))
 	} else {
 		return err
-	}
-	if err = c.redis.SAdd(key, value...).Err(); err != nil {
-		log.GetLogger().Error("[AddressInset] failed", zap.Any("addrS", addrS), zap.Error(err))
 	}
 	return err
 }
@@ -48,13 +52,35 @@ func (c *cache) AddressGetTotal(ctx context.Context, currency string) (total int
 }
 
 // AddressGet 获取地址
-func (c *cache) AddressGet(ctx context.Context, currency string) (address string, err error) {
+func (c *cache) AddressGet(ctx context.Context, currency string) (address, id string, err error) {
+	for i := 0; i <= 10; i++ { // 重试10次
+		address, id, err = c.addressGet(ctx, currency)
+		if err == nil && len(address) >= 0 && len(id) >= 0 {
+			return
+		}
+		time.Sleep(time.Second / 2)
+	}
+	return "", "", hcode.ErrAddressGet
+}
+
+func (c *cache) addressGet(ctx context.Context, currency string) (address, id string, err error) {
 	var key = getKeyAddress(currency)
 	address, err = c.redis.SPop(key).Result()
 	if err != nil {
-		log.GetLogger().Error("[AddressGet] failed", zap.Any("currency", currency), zap.Error(err))
+		log.GetLogger().Error("[AddressGet] redis.SPop failed",
+			zap.Any("currency", currency),
+			zap.Any("key", key),
+			zap.Error(err))
 	}
-	return address, err
+	id, err = c.redis.HGet(common.AllAddress, address).Result()
+	if err != nil {
+		log.GetLogger().Error("[AddressGet] redis.HGet failed",
+			zap.Any("currency", currency),
+			zap.Any("key", common.AllAddress),
+			zap.Any("address", address),
+			zap.Error(err))
+	}
+	return address, id, err
 }
 
 // AddressIsItOurs 是否监听地址

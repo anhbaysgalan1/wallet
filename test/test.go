@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	defer client.Close()
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
 		log.Fatal(err)

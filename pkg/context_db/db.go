@@ -2,7 +2,7 @@ package context_db
 
 import (
 	"context"
-	"github.com/leaf-rain/wallet/common"
+	"github.com/leaf-rain/wallet/internal/common"
 	"github.com/leaf-rain/wallet/pkg/database/redis"
 	"go.mongodb.org/mongo-driver/mongo"
 )

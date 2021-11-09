@@ -9,16 +9,15 @@ const (
 const LanguageLen = 2
 
 var (
-	OK                   = addCode(200) // 正确
-	ErrServer            = addCode(500) // 服务器内部错误
-	ErrReqLimit          = addCode(501) // 限速
-	ErrParameter         = addCode(502) // 参数错误
-	ErrInternalParameter = addCode(503) // 内部参数错误
-	ErrInternalDb        = addCode(504) // 内部参数错误DB
-	ErrInternalCache     = addCode(505) // 内部参数错误Redis
-	ErrDbExec            = addCode(506) // db层执行错误
+	OK                   = addCode(200)  // 正确
+	ErrServer            = addCode(500)  // 服务器内部错误
+	ErrReqLimit          = addCode(-501) // 限速
+	ErrParameter         = addCode(-502) // 参数错误
+	ErrInternalParameter = addCode(-503) // 内部参数错误
+	ErrInternalDb        = addCode(-504) // 内部参数错误DB
+	ErrInternalCache     = addCode(-505) // 内部参数错误Redis
 
-	ErrAddressGet = addCode(550) // 地址获取失败
+	ErrAddressGet = addCode(-550) // 地址获取失败
 
 )
 
@@ -34,20 +33,18 @@ func init() {
 		ZH: "请求过于频繁，请稍后操作"})
 	addDescription(ErrParameter, map[string]string{
 		EN: "Parameter error",
-		ZH: "服务器内部错误"})
+		ZH: "参数错误"})
 	addDescription(ErrInternalParameter, map[string]string{
 		EN: "Internal parameter error",
-		ZH: "服务器内部错误"})
+		ZH: "内部参数错误"})
 	addDescription(ErrInternalDb, map[string]string{
 		EN: "Internal parameter error",
-		ZH: "服务器内部错误"})
+		ZH: "数据库执行错误"})
 	addDescription(ErrInternalCache, map[string]string{
 		EN: "Internal parameter error",
-		ZH: "服务器内部错误"})
-	addDescription(ErrDbExec, map[string]string{
-		EN: "Internal parameter error",
-		ZH: "服务器内部错误"})
+		ZH: "缓存执行错误"})
+
 	addDescription(ErrAddressGet, map[string]string{
-		EN: "Closed registration",
-		ZH: "服务器内部错误"})
+		EN: "Failed to get address",
+		ZH: "地址获取失败"})
 }

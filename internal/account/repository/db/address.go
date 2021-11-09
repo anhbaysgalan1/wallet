@@ -3,7 +3,8 @@ package db
 import (
 	"context"
 	"errors"
-	"github.com/leaf-rain/wallet/internal/block_chain/model"
+	"github.com/leaf-rain/wallet/internal/account/dto"
+	"github.com/leaf-rain/wallet/internal/account/entity"
 	"github.com/leaf-rain/wallet/pkg/context_db"
 	"github.com/leaf-rain/wallet/pkg/hcode"
 	"github.com/leaf-rain/wallet/pkg/log"
@@ -15,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (r *repository) AddressCreate(ctx context.Context, addr *model.AddressPrivate) (err error) {
+func (r *accountDb) AddressCreate(ctx context.Context, addr *entity.EntityAddressPrivate) (err error) {
 	mg := context_db.GetMongoTx(ctx)
 	if mg == nil {
 		mg = r.mongo
@@ -26,7 +27,7 @@ func (r *repository) AddressCreate(ctx context.Context, addr *model.AddressPriva
 	if addr.Id.IsZero() {
 		addr.Id = primitive.NewObjectID()
 	}
-	addr.Status = model.AddressStatus_UnUsed
+	addr.Status = dto.AccountType_AccountType_UnUsed
 	collection := addressPrivateGetCollection(mg)
 	var now = tool.GetTimeUnixMilli()
 	addr.CreateTime, addr.UpdateTime = now, now
@@ -37,7 +38,7 @@ func (r *repository) AddressCreate(ctx context.Context, addr *model.AddressPriva
 	return err
 }
 
-func (r *repository) AddressSet(ctx context.Context, addr *model.AddressPrivate) (err error) {
+func (r *accountDb) AddressSet(ctx context.Context, addr *entity.EntityAddressPrivate) (err error) {
 	mg := context_db.GetMongoTx(ctx)
 	if mg == nil {
 		mg = r.mongo
@@ -51,7 +52,7 @@ func (r *repository) AddressSet(ctx context.Context, addr *model.AddressPrivate)
 		update["remarks"] = addr.Remarks
 	}
 	update["update_time"] = tool.GetTimeUnixMilli()
-	result, err := collection.UpdateOne(ctx, bson.M{"_id": addr.Id}, update)
+	result, err := collection.UpdateOne(ctx, bson.D{{"_id", addr.Id}, {"status", dto.AccountType_AccountType_UnUsed}}, update)
 	if err != nil {
 		log.GetLogger().Error("[AddressSet] failed", zap.Any("req", addr), zap.Error(err))
 		return hcode.ErrServer
@@ -59,13 +60,13 @@ func (r *repository) AddressSet(ctx context.Context, addr *model.AddressPrivate)
 	if result.ModifiedCount != 1 {
 		if err != nil {
 			log.GetLogger().Error("[DbSetAddressStatus] failed", zap.Any("req", addr), zap.Error(err))
-			return hcode.ErrDbExec
+			return hcode.ErrInternalDb
 		}
 	}
 	return nil
 }
 
-func (r *repository) AddressSCreate(ctx context.Context, addrS []model.AddressPrivate) (err error) {
+func (r *accountDb) AddressSCreate(ctx context.Context, addrS []*entity.EntityAddressPrivate) (err error) {
 	mg := context_db.GetMongoTx(ctx)
 	if mg == nil {
 		mg = r.mongo
@@ -84,7 +85,7 @@ func (r *repository) AddressSCreate(ctx context.Context, addrS []model.AddressPr
 	return nil
 }
 
-func (r *repository) AddressGetByFilter(ctx context.Context, filter bson.D, opt *options.FindOptions) (addrS []model.AddressPrivate, err error) {
+func (r *accountDb) AddressGetByFilter(ctx context.Context, filter bson.D, opt *options.FindOptions) (addrS []*entity.EntityAddressPrivate, err error) {
 	mg := context_db.GetMongoTx(ctx)
 	if mg == nil {
 		mg = r.mongo
