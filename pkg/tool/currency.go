@@ -12,9 +12,13 @@ func getLen(str string) int64 {
 		return 6
 	case "trc20_usdt":
 		return 6
+	case "brc20_usdt":
+		return 6
 	case "btc":
 		return 18
 	case "rinkeby_eth":
+		return 18
+	case "bnb":
 		return 18
 	}
 	return 0

@@ -7,6 +7,7 @@ import (
 
 type EntityAddressPrivate struct {
 	Id         primitive.ObjectID `json:"_id" bson:"_id"`                 // id
+	Uid        string             `json:"uid" bson:"uid"`                 // uid
 	Address    string             `json:"address" bson:"address"`         // 地址
 	Private    string             `json:"private" bson:"private"`         // 私钥
 	Currency   string             `json:"currency" bson:"currency"`       // 币种

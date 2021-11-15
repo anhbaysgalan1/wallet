@@ -36,12 +36,6 @@ func init() {
 		MinBalanceForMining:  10000,
 		MinBalanceForAirdrop: 100000,
 	}
-	if log.GetLogger() == nil {
-		_, _ = log.NewLogger(&log.Options{
-			AppName: "gluttonous_test",
-			Level:   "info",
-		})
-	}
 }
 
 type ResultForDingDing struct {

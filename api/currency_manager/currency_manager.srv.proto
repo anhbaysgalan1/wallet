@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package Account.service.v1;
+
+option go_package = "../../internal/currency_manager/dto";
+
+service CurrencyManagerSrv {
+  // 获取所有币种信息
+  rpc CurrencyGetForList(Empty) returns (CurrencyList) {};
+  rpc CurrencyGetForMap(Empty) returns (CurrencyMap) {};
+  // 获取转账网络信息
+  rpc NetGetByCy(NameReq) returns (NetList) {};
+  rpc NetGetByName(NameReq) returns (Net) {};
+}
+
+message Empty {}
+
+message CurrencyList {
+  repeated Currency currencyList = 1;
+}
+
+message CurrencyMap {
+  map<string, Currency> currencyMap = 1;
+}
+
+message Currency {
+  string Name = 1;
+  int64 Status = 2;
+}
+
+message NameReq {
+  string Name = 1;
+}
+
+message NetList {
+  repeated Net nets = 1;
+}
+
+message Net {
+  string Name = 1;
+  string SpareName = 2;
+  string MasterCy = 3;
+  string AddressCy = 4;
+  bool Status = 5;
+  string AdviseGas = 6;
+  string  MinGas = 7;
+  string MaxGas = 8;
+  int32  Weight = 9;
+}
