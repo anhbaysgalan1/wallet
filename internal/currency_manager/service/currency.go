@@ -10,13 +10,7 @@ import (
 type CurrencyMangerSrv struct {
 	CurrencyList *entity.CurrencyList
 	NetList      *entity.CurrencyNetList
-}
-
-func NewCurrencyMangerSrv() dto.CurrencyManagerSrvServer {
-	return &CurrencyMangerSrv{
-		CurrencyList: NewCurrencyCfg(),
-		NetList:      NewNetCfg(),
-	}
+	dto.UnimplementedCurrencyManagerSrvServer
 }
 
 // CurrencyGetForList 获取所有币种信息
@@ -26,6 +20,9 @@ func (cms CurrencyMangerSrv) CurrencyGetForList(ctx context.Context, req *dto.Em
 	for index, item := range *cms.CurrencyList {
 		result.CurrencyList[index] = item.ToPb()
 	}
+	if len(result.GetCurrencyList()) <= 0 {
+		return nil, hcode.ErrCurrencyNotFound
+	}
 	return result, nil
 }
 func (cms CurrencyMangerSrv) CurrencyGetForMap(ctx context.Context, req *dto.Empty) (*dto.CurrencyMap, error) {
@@ -34,13 +31,31 @@ func (cms CurrencyMangerSrv) CurrencyGetForMap(ctx context.Context, req *dto.Emp
 	for _, item := range *cms.CurrencyList {
 		result.CurrencyMap[item.Name] = item.ToPb()
 	}
+	if len(result.GetCurrencyMap()) <= 0 {
+		return nil, hcode.ErrCurrencyNotFound
+	}
 	return result, nil
 }
 
 // NetGetByCy 获取转账网络信息
 func (cms CurrencyMangerSrv) NetGetByCy(ctx context.Context, req *dto.NameReq) (*dto.NetList, error) {
-	return nil, hcode.ErrServer
+	var result = new(dto.NetList)
+	result.Nets = make([]*dto.Net, 0)
+	for _, item := range *cms.NetList {
+		if item.Name == req.Name {
+			result.Nets = append(result.Nets, item.ToPb())
+		}
+	}
+	if len(result.GetNets()) <= 0 {
+		return nil, hcode.ErrCurrencyNotFound
+	}
+	return result, nil
 }
 func (cms CurrencyMangerSrv) NetGetByName(ctx context.Context, req *dto.NameReq) (*dto.Net, error) {
-	return nil, hcode.ErrServer
+	for _, item := range *cms.NetList {
+		if item.Name == req.Name {
+			return item.ToPb(), nil
+		}
+	}
+	return nil, hcode.ErrNetNotFound
 }

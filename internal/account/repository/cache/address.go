@@ -24,14 +24,9 @@ func (c *cache) AddressInset(ctx context.Context, addrS []*entity.EntityAddressP
 		return nil
 	}
 	var key = getKeyAddress(addrS[0].Currency)
-	var valueMap = make(map[string]interface{}, len(addrS))
 	var valueList = make([]interface{}, len(addrS))
 	for i := range addrS {
-		valueMap[addrS[i].Address] = addrS[i].Id.Hex()
 		valueList[i] = addrS[i].Address
-	}
-	if err = c.redis.HMSet(common.AllAddress, valueMap).Err(); err != nil {
-		log.GetLogger().Error("[AddressInset] failed", zap.Any("addrS", addrS), zap.Error(err))
 	}
 	if err = c.redis.SAdd(key, valueList...).Err(); err != nil {
 		log.GetLogger().Error("[AddressInset] failed", zap.Any("addrS", addrS), zap.Error(err))
@@ -56,6 +51,14 @@ func (c *cache) AddressGet(ctx context.Context, currency string) (address, id st
 	for i := 0; i <= 10; i++ { // 重试10次
 		address, id, err = c.addressGet(ctx, currency)
 		if err == nil && len(address) >= 0 && len(id) >= 0 {
+			if err = c.redis.HSet(common.AllAddress, address, id).Err(); err != nil {
+				log.GetLogger().Error("[AddressGet] redis.HSet failed",
+					zap.String("currency", currency),
+					zap.String("address", address),
+					zap.String("id", id),
+					zap.Error(err))
+				return "", "", err
+			}
 			return
 		}
 		time.Sleep(time.Second / 2)

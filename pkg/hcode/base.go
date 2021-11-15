@@ -17,7 +17,9 @@ var (
 	ErrInternalDb        = addCode(-504) // 内部参数错误DB
 	ErrInternalCache     = addCode(-505) // 内部参数错误Redis
 
-	ErrAddressGet = addCode(-550) // 地址获取失败
+	ErrAddressGet       = addCode(-550) // 地址获取失败
+	ErrCurrencyNotFound = addCode(-551) // 币种不存在
+	ErrNetNotFound      = addCode(-552) // 转账网络不存在
 
 )
 
@@ -47,4 +49,11 @@ func init() {
 	addDescription(ErrAddressGet, map[string]string{
 		EN: "Failed to get address",
 		ZH: "地址获取失败"})
+	addDescription(ErrCurrencyNotFound, map[string]string{
+		EN: "currency not found",
+		ZH: "币种不存在"})
+	addDescription(ErrNetNotFound, map[string]string{
+		EN: "net not found",
+		ZH: "转账网络不存在"})
+
 }
