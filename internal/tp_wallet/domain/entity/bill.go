@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"tp_wallet/internal/tp_wallet/adapter/dto"
 	"tp_wallet/internal/tp_wallet/domain/vo"
@@ -9,8 +8,9 @@ import (
 
 type Bill struct {
 	Id              primitive.ObjectID     `json:"id,omitempty" bson:"_id"`                                      // 订单id
+	NumericalOrder  uint64                 `json:"numerical_order" bson:"numerical_order"`                       // 流水号
 	Uid             uint64                 `json:"uid,omitempty" bson:"uid,omitempty"`                           // uid
-	Cid             uint64                 `json:"cid,omitempty" bson:"cid,omitempty"`                           // 渠道id
+	Cid             uint64                 `json:"cid,omitempty" bson:"cid"`                                     // 渠道id
 	Amount          string                 `json:"amount,omitempty" bson:"amount,omitempty"`                     // 转账金额
 	Gas             vo.Gas                 `json:"gas,omitempty" bson:"gas,omitempty"`                           // 手续费
 	BillType        dto.TransferType       `json:"bill_type,omitempty" bson:"bill_type,omitempty"`               // 账单类型
@@ -33,10 +33,8 @@ type Bill struct {
 }
 
 func (b *Bill) CheckBillCreate() bool {
-	if b.Uid == 0 || b.Cid == 0 || b.BillType == 0 || b.BillStatus == 0 || len(b.FromAddr) == 0 || len(b.ToAddr) == 0 {
+	if b.Uid == 0 || b.Cid == 0 || b.BillType == 0 || b.BillStatus == 0 || len(b.FromAddr) == 0 || len(b.ToAddr) == 0 || b.NumericalOrder <= 0 {
 		return false
 	}
 	return true
 }
-
-
