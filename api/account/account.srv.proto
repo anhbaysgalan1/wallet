@@ -6,7 +6,11 @@ option go_package = "../../internal/account/dto";
 
 service AccountSrv {
   // 获取(创建)帐号 如果已经存在账户，则直接返回
-  rpc AccountGet(AccountGetReq) returns (AccountGetResp) {};
+  rpc AccountGet(AccountGetReq) returns (AddressResp) {};
+  // 获取账户转账地址
+  rpc AddressGet(AddressGetReq) returns(AddressResp) {};
+  // 获取账户余额
+//  rpc BalanceGet(BalanceGetReq) returns(AddressResp) {};
 }
 
 message Empty {}
@@ -18,8 +22,13 @@ message AccountGetReq {
   string remarks = 4; // 备注
 }
 
-message AccountGetResp {
-  string address = 1; // 币种
+message AddressResp {
+  string address = 1; // 地址
+}
+
+message AddressGetReq {
+  string uid = 1; // 用户唯一标识
+  string net = 2; // 网络名称
 }
 
 enum AccountType{

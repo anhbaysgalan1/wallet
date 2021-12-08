@@ -34,6 +34,7 @@ func NewAddressRepo(db db.AccountDb, cache cache.AccountCache) AccountRepo {
 func (a *AccountRepo) GetToUsed(ctx context.Context, currency, remarks string) (address string, err error) {
 	var id string
 	address, id, err = a.cache.AddressGet(ctx, currency)
+	defer a.CheckInventory(ctx, currency)
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
 			return address, err
