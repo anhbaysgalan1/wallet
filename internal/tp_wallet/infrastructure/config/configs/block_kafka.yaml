@@ -1,0 +1,8 @@
+kafkaAddr:
+  - "172.12.12.165:9092"
+topicH2OTransaction: "topic_h2o_transaction_test"
+groupH2OTransaction: "group_h2o_transaction_test"
+topicNftTransaction: "topic_nft_transaction_test"
+groupNftTransaction: "group_nft_transaction_test"
+topicNftCreate: "topic_nft_create_test"
+groupNftCreate: "group_nft_create_test"

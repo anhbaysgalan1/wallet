@@ -1,0 +1,6 @@
+httpName: "tp_wallet"
+httpAddr: "0.0.0.0:7890"
+grpcAddr: "0.0.0.0:7891"
+readTimeout: 10
+writeTimeout: 10
+cronAsyncTransfer: "*/30 * * * * ?"

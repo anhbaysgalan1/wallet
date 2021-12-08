@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "wallet.msg.proto";
+
+package Wallet.service.v1;
+
+option go_package = "/api";
+
+service WalletSrv {
+  // AccountGet 获取(创建)帐号 如果已经存在账户，则直接返回
+  rpc AccountGet(UidReq) returns (AccountGetResp) {};
+  // AccountGet 获取(创建)帐号 如果已经存在账户，则直接返回
+  rpc BalanceGet(UidReq) returns (AccountGetResp) {};
+  // 离线转账
+  rpc TransferH2OForOffline(TransferForOfflineReq) returns(Empty) {};
+  // 提现
+  rpc TransferH2OCash(TransferCashReq) returns(Empty) {};
+  // 获取系统交易账户地址
+  rpc GetSysTransferAddr(Empty) returns(AddrResp) {};
+  // 处理一笔订单
+  rpc DealWithBill(BillInfo) returns(Empty) {};
+
+  // nft创建
+  rpc NftCreate(NftInfo) returns (Hash) {};
+  // 查询nft归属
+  rpc NftGetAttribution(NftToken) returns (NftInfo){};
+  // 获取用户拥有的链上frt
+  rpc NftGetByUid(NftGetByUidReq) returns(NftInfoS){};
+  // 提现
+  rpc NftCash(NftCashReq) returns(Empty) {};
+  // 获取系统合约账户地址
+  rpc GetSysContractAddr(ContractType) returns(AddrResp) {};
+  // 处理待上链订单
+  rpc JobH2OWalletTransferToBlock(Empty) returns(Empty) {};
+  rpc JobNftWalletTransferToBlock(Empty) returns(Empty) {};
+}

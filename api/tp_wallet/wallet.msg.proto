@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package Wallet.service.v1;
+
+option go_package = "tp_wallet/internal/tp_wallet/adapter/dto";
+
+message Empty {}
+
+message UidReq {
+  uint64 uid = 1; // 用户唯一标识
+  string addr = 2; // 用户登录地址
+  string currency = 3; // 币种
+}
+
+message AccountGetResp {
+  uint64 uid = 1; // 用户唯一标识
+  string currency = 2; // 币种
+  //    repeated string address = 2; // 钱包地址
+  string balance = 3; // 用户余额
+  bool isExist = 4; // 是否存在
+}
+
+message TransferForOfflineReq {
+  uint64 from = 1;
+  uint64 to = 2;
+  string currency = 3;
+  string amount = 4;
+  TransferType TransferType = 5;
+}
+
+enum TransferType {
+  TransferType_ABANDON = 0; // 放弃
+  H2OTransfer = 1; // 转账
+  H2OCASH = 2; // 提现
+  H2OCHARGE = 3; // 充值
+  H2OApproval = 4; // h2o授权
+  H2OApprovalTransfer = 5; // h2o授权转账
+  NftTransfer = 6; // 转账
+  NftCreate = 7; // nft创建
+  NftCASH = 8; // 提现
+  NftCHARGE = 9; // 充值
+  NftApproval = 10; // nft授权
+  NftApprovalTransfer = 11; // nft授权转账
+  OfflineTransfer = 12; // 离线转账
+}
+
+enum BillStatus{
+  BillStatus_ABANDON = 0; // 放弃
+  Queuing = 1; // 等待上链中
+  Pending = 2; // 上链中
+  Success = 3; // 成功
+  Failed = 4; // 失败
+}
+
+message TransferCashReq {
+  uint64 uid = 1; // 用户唯一标识
+  string toAddr = 2; // 提现地址
+  string currency = 3;//币种
+  string amount = 4; // 提现金额
+}
+
+message AddrResp {
+  string Addr = 1; // 系统地址
+}
+
+message Page {
+  int64 limit = 1; // 每次读取数量
+  int64 offset = 2; // 偏移量
+  int64 total = 3; // 总数
+}
+
+message BillInfo {
+  string id = 1;
+  string amount = 2;
+  string gas = 3;
+  string gasCurrency = 4;
+  string receivedAmount = 5;
+  TransferType billType = 6;
+  BillStatus billStatus = 7;
+  string hash = 8;
+  uint64  from = 9;
+  string fromAddr = 10;
+  uint64 to = 11;
+  string toAddr = 12;
+  string remark = 13;
+  int64 times = 14;
+  string nftToken = 15;
+  string contract = 16;
+  string currency = 17;
+  int64 createTime = 18;
+  int64 updateTime = 19;
+  bool IsBalanceSet = 20;
+  NftInfo NftInfo = 21;
+}
+
+message NftInfoS {
+  map<string, NftInfo> nfts = 1;
+}
+
+message NftInfo {
+  uint64 uid = 1;
+  string ownerAddress = 2;
+  string GameId = 3;
+  string nftGameToken = 4;
+  string nftChainToken = 5;
+  string contractAddress = 6;
+  string contractToken = 7;
+  uint64 Level = 8;
+  bool IsBalanceSet = 9;
+}
+
+message NftToken {
+  string contractToken = 1;
+  string nftToken = 2;
+}
+
+message Hash {
+  string hash = 1;
+}
+
+message NftGetByUidReq {
+  uint64 uid = 1;
+  string addr = 2;
+  Page page = 3;
+}
+
+message ContractType {
+  string contractType = 1; // 合约类型
+}
+
+message NftCashReq {
+  uint64 uid = 1; // 用户唯一标识
+  string toAddr = 2; // 提现地址
+  string nftToken = 3; // Nft token
+  string contractType = 4; // 合约类型
+}

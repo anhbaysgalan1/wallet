@@ -1,0 +1,5 @@
+addr: mongodb://172.12.12.88:27017
+user: admin
+password: "123456"
+active: 100
+idleTimeout: 4200

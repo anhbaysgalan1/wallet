@@ -1,0 +1,53 @@
+httpAddr: "172.18.6.54:2340"
+keyScan: "ESV5HH9A8ZYW6NBC8HD89PXDTTEIQZNZ5Q"
+keyTransfer: "HVEDITGJE6REH92UGJY3XQWHBQ4RK9BYQG"
+BscBlockNumber: 13065540
+H2OContractAddress: "0x8b2ff3eaa80c998302fa20f5012f68716c5e710a"
+RowingBoatContractAddress: "0xa32b65fa1d00e9833d6ec6f8431c9114f9a73568"
+RacerContractAddress: "0x66e74630566ce55390e9b8c8896170d0fb1bf65d"
+H2OSysUid: 1
+H2OSysToken: "sys_h2o"
+H2OUidAddrIncome: "0x8b2ff3eaa80c998302fa20f5012f68716c5e710a"
+H2OUidAddrExpenditure:
+  - "0x00000000000001-1"
+NftSysUid: 2
+NftSysToken: "sys_nft"
+NftAddrIncome: "0x00000000000002"
+NftAddrExpenditure:
+  - "0x00000000000002-1"
+AddressForGame:
+  - SysUid: 3
+    ContractAddress: "0x00000000000003"
+    SysToken: "F1 H2O SPEED"
+    AddrIncome: "0x7cE8102020f45e1451ba93B7D7997AD6aF0ED56b"
+    AddrCreate: "0x00000000000003-2"
+    AddrExpenditure:
+      - "0x7cE8102020f45e1451ba93B7D7997AD6aF0ED56b"
+  - SysUid: 4
+    ContractAddress: "0x00000000000004"
+    SysToken: "auction"
+    AddrIncome: "0xEB88eEc7C45BcEc60C46764Fc68800ca31E5A299"
+    AddrCreate: "0x00000000000004-2"
+    AddrExpenditure:
+      - "0xEB88eEc7C45BcEc60C46764Fc68800ca31E5A299"
+  - SysUid: 5
+    ContractAddress: "0x00000000000005"
+    SysToken: "auction"
+    AddrIncome: "0x174B8Ce285E1B57f95eAaAb039F26f15E5Fe9213"
+    AddrCreate: "0x00000000000005-2"
+    AddrExpenditure:
+      - "0x174B8Ce285E1B57f95eAaAb039F26f15E5Fe9213"
+  - SysUid: 6
+    ContractAddress: "0x00000000000005"
+    SysToken: "Rowing Boat NFT"
+    AddrIncome: ""
+    AddrCreate: "0x00000000000005-2"
+    AddrExpenditure:
+      - "0x174B8Ce285E1B57f95eAaAb039F26f15E5Fe9213"
+  - SysUid: 7
+    ContractAddress: "0x00000000000005"
+    SysToken: "Racer NFT"
+    AddrIncome: "0x174B8Ce285E1B57f95eAaAb039F26f15E5Fe9213"
+    AddrCreate: "0x00000000000005-2"
+    AddrExpenditure:
+      - "0x174B8Ce285E1B57f95eAaAb039F26f15E5Fe9213"

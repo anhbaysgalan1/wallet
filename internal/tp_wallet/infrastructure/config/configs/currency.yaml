@@ -1,0 +1,5 @@
+currency:
+  - name: usdt
+    status: 32767
+  - name: bnb
+    status: 32767
